@@ -1,0 +1,26 @@
+<div class="popover-content">
+  <div class="citation-links" text-align="right">
+    <a class="tapable" id="bibtex-link" onclick="bibtexOnClick()" ontouchstart="bibtexOnClick()">
+      Bibtex
+    </a>
+    |
+    <a class="tapable" id="mla-link" onclick="mlaOnClick()" ontouchstart="mlaOnClick()">
+      MLA
+    </a>
+    |
+    <a class="tapable" id="apa-link" onclick="apaOnClick()" ontouchstart="apaOnClick()">
+      APA
+    </a>
+  </div>
+  <br />
+
+  <div id="bibtex-text" style="display: block;">
+    {{$bibtex_html}}
+  </div>
+  <div id="mla-text" style="display: none;">
+    {{$mla_html}}
+  </div>
+  <div id="apa-text" style="display: none;">
+    {{$apa_html}}
+  </div>
+</div>

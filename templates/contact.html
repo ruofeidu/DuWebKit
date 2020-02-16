@@ -1,0 +1,40 @@
+<section id="contact">
+  <h2>{{stay_in_touch}}</h2>
+  <div class="row">
+    <div class="8u 12u$(small)">
+      <form method="post">
+        <div class="row uniform 50%">
+          <div class="6u 12u$(xsmall)">
+            <input type="text" name="name" id="send_name" placeholder="{{your_name}}" />
+          </div>
+          <div class="6u$ 12u$(xsmall)"><input type="email" name="email" id="sender_email"
+              placeholder="{{your_email}}" />
+          </div>
+          <div class="12u$">
+            <textarea name="message" id="send_message" placeholder="{{chat}}" rows="4"></textarea>
+          </div>
+        </div>
+      </form>
+      <ul class="actions">
+        <li><input type="submit" value="Send Message" id="send_email" /></li>
+      </ul>
+    </div>
+    <div class="4u$ 12u$(small)">
+      <ul class="labeled-icons">
+        <li>
+          <h3 class="icon fa-envelope-o"><span class="label">Email</span></h3>
+          <a id="reveal_email" class="tapable">click to reveal</a>
+        </li>
+        <li>
+          <h3 class="icon fa-mobile"><span class="label">Phone</span></h3>
+          <a id="reveal_phone" class="tapable">click to reveal</a>
+        </li>
+        <li>
+          <h3 class="icon fa-pencil"><span class="label">Last Updated</span></h3>
+          <i id="du-last"></i> by <a href="http://ruofeidu.com">{{name_en}}</a>
+          <br />({{name_cn}})</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+</section>

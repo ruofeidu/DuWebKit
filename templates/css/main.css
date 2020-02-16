@@ -1,0 +1,24 @@
+/* My CSS file is ommitted here, please put your own CSS file. */
+/* DuWebsite */
+.award {
+  background: #c0d9f5;
+  color: #3c3c3c;
+  font-style: italic;
+  font-size: smaller;
+  margin-left: 5px;
+  padding-left: 7px;
+  padding-right: 9px;
+  padding-bottom: 1px;
+  padding-top: 1px;
+  -webkit-border-radius: 2px;
+  -moz-border-radius: 2px;
+  border-radius: 2px;
+}
+
+.keywords {
+  font-size: 50%;
+}
+
+.tapable {
+  cursor: pointer;
+}
