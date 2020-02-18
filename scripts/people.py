@@ -5,12 +5,13 @@ This class allows the user process papers in batch.
 import re
 import json
 import htmlmin
+import logging
 from markdown import markdown
 from scripts.data import Data
 from scripts.person import Person
 from scripts.utils.utils import Utils
 from scripts.utils.constants import DEBUG_HTML_SCRIPT
-import warnings
+import logging
 from datetime import datetime
 import operator
 
@@ -26,15 +27,14 @@ class People:
     # pid list.
     self._keys = []
 
-    # _last_dict is a dict of dict of list, indexed by last names,
-    # followed by first names.
+    # A dict of dict of list, indexed by last names, followed by first names.
     self._last_dict = {}
 
     if not rows:
-      warnings.warn('No people sheet in gSheet was found.')
+      logging.error('No people sheet in gSheet was found.')
       return
     else:
-      print(rows[0])
+      logging.info(rows[0])
 
     Person.set_header(rows[0])
     People._count = len(rows)
@@ -54,7 +54,7 @@ class People:
       d = self._data[k]
       name = d.get_full_name_with_marks()
       if name in duplicates:
-        print('! Duplicated: ', name)
+        logging.warn('Duplicated: ', name)
       duplicates.add(name)
     # Examines birthdays.
     birthday_list = []
@@ -83,7 +83,8 @@ class People:
           return self._last_dict[last][first][0]
     return None
 
-  def add_to_last_dict(self, p):
+  def _add_to_last_dict(self, p):
+    """Adds a Person to the last dict."""
     first, last = p.get_first(), p.get_last()
     if last not in self._last_dict:
       self._last_dict[last] = {}
@@ -92,22 +93,22 @@ class People:
     else:
       self._last_dict[last][first].append(p)
 
-  # Add a Person to self.
   def _add_person(self, p):
-    self.add_to_last_dict(p)
+    """Adds a Person to self."""
+    self._add_to_last_dict(p)
     pid = p.get_pid()
     self._data[pid] = p
     self._keys.append(pid)
     Data.pids.add(pid)
 
-  # Add a Person with first and last names.
   def add_person(self, first, last):
+    """Adds a Person with first and last names."""
     p = Person(['', first, last])
     self._add_person(p)
     return p
 
-  # Convert to JSON.
   def to_json(self):
+    """Converts to JSON."""
     _dict = {}
     for pid in self._keys:
       _dict[pid] = self._data[pid].to_dict()

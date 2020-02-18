@@ -5,6 +5,7 @@ import os
 import datetime
 import configparser
 import htmlmin
+import logging
 from markdown import markdown
 from shutil import copyfile
 import csscompressor
@@ -19,36 +20,42 @@ from scripts.utils.dir import Dir
 
 
 class Lang:
-  current = None
-  prev = None
-  en = {}
-  cn = {}
-
-
-class Input:
-  html = []
-  data = []
-  md = []
-  build = []
+  """Manages language-dependent variable to text."""
+  current = None  # type: dict
+  prev = None  # type: dict
+  en = {}  # English
+  cn = {}  # Chinese
+  languages = []  # type: list
 
 
 class Compiler:
-  built_dict = set()
-  built_html = {}
+  """Compiles html, markdown, css, javascript, etc."""
+  __slots__ = ('_assign_dict', 'built_dict', 'built_html')
 
   def __init__(self):
     """Parses the configuration file for settings, languages, etc."""
+    self._assign_dict = {}  # type: dict
+    self.built_dict = set()  # type: set
+    self.built_html = {}  # type: dict
+
+    # Reads from config.ini.
     config = configparser.ConfigParser()
     config.read("config.ini", encoding='utf8')
     Dir.template = config.get('Dir', 'template').strip()
     App.debug = config.getboolean('App', 'debug')
     App.my_name = config.get('App', 'my_name').strip()
-    Input.build = config.get('Input', 'build').strip().replace(" ",
-                                                               "").split(",")
+    Data.build_files = list(
+        map(str.strip,
+            config.get('Input', 'build_files').split(",")))
+
     # Sets up languages.
     Lang.en = dict(config.items('English'))
     Lang.cn = dict(config.items('Chinese'))
-    Lang.en['year'] = datetime.date.today().year
+    Lang.languages = [Lang.en, Lang.cn]
+    for lang in Lang.languages:
+      lang['year'] = datetime.date.today().year
+      lang['month'] = datetime.date.today().month
+      lang['day'] = datetime.date.today().day
     Lang.current = Lang.en
 
     # Gets the gSheets id for synchronization.
@@ -57,6 +64,7 @@ class Compiler:
 
   def compile_css(self, css_filename):
     """Generates CSS files."""
+    # Exits if cached.
     if css_filename in self.built_dict:
       return False
     css_fullpath = os.path.join(Dir.templates, Dir.css, css_filename)
@@ -74,6 +82,7 @@ class Compiler:
     """Generates JS files."""
     if js_filename in self.built_dict:
       return False
+    # Exits if cached.
     js_fullpath = os.path.join(Dir.templates, Dir.js, js_filename)
     with open(js_fullpath, 'r', encoding='utf8') as f:
       js_content = ''.join(f.readlines())
@@ -117,14 +126,13 @@ class Compiler:
       filename: input filename with predefined grammar rules.
 
     Returns:
-      HTML contents of this file.
+      html: HTML contents of this file.
     """
     if filename in self.built_html:
-      print("Reusing HTML: %s" % filename)
+      logging.info("Reusing HTML: %s" % filename)
       return self.built_html[filename]
     html = ''
 
-    # extension = os.path.splitext(filename)[1]
     input_filename = os.path.join(Dir.templates, filename)
     output_filename = os.path.join(Dir.builds, filename)
 
@@ -138,11 +146,19 @@ class Compiler:
         html += line
         continue
 
+      # 0. Parses variable meta commands.
+      ans = Regex.ASSIGN.search(line)
+      if ans:
+        lhs = ans.group(1)
+        rhs = ans.group(2)
+        self._assign_dict[lhs] = rhs
+        continue
+
       # 1. Recursively parses the included file.
       ans = Regex.INCLUDE.search(line)
       if ans:
         include_filename = ans.group(1)
-        print("~ Including HTML: %s" % include_filename)
+        logging.info('Including HTML: %s' % include_filename)
         include_content = self.compile(include_filename)
         html += include_content
         continue
@@ -151,10 +167,9 @@ class Compiler:
       ans = Regex.CSS.search(line)
       if ans:
         css_filename = ans.group(1)
-        print("~ Minimizing CSS: %s" % css_filename)
+        logging.info('Minimizing CSS: %s' % css_filename)
         self.compile_css(css_filename)
-        css_filename = os.path.join(Dir.css, css_filename)
-        css_filename.replace('\\', '/')
+        css_filename = os.path.join(Dir.css, css_filename).replace('\\', '/')
         html += '<link rel="stylesheet" href="/%s" />' % css_filename
         continue
 
@@ -162,35 +177,35 @@ class Compiler:
       ans = Regex.JS.search(line)
       if ans:
         js_filename = ans.group(1)
-        print("~ Minimizing JS: %s" % js_filename)
+        logging.info("~ Minimizing JS: %s" % js_filename)
         self.compile_js(js_filename)
-        js_filename = os.path.join(Dir.js, js_filename)
-        js_filename.replace('\\', '/')
+        js_filename = os.path.join(Dir.js, js_filename).replace('\\', '/')
         html += '<script src="/%s"></script>' % js_filename
         continue
 
-      # 4. Parses image file.
+      # 4. Parses image file inline.
       ans = Regex.IMAGE.search(line)
       if ans:
-        image_filename = os.path.join('images', ans.group(1))
-        image_description = Compiler.parse_variable(ans.group(2))
+        image_filename = os.path.join(Dir.images,
+                                      ans.group(1)).replace('\\', '/')
+        image_description = self.parse_variable(ans.group(2))
         line = DuMark.get_image('/' + image_filename, image_description)
         line = markdown(line)
 
-      # 5. Parses publication file.
+      # 5. Parses publication file inline.
       ans = Regex.PUBLICATION.search(line)
       if ans:
-        pub_filename = os.path.join('templates', ans.group(1))
+        pub_filename = os.path.join(Dir.templates, ans.group(1))
         line = self.compile_publication(pub_filename)
 
-      # 6. Parses art file.
+      # 6. Parses art file inline.
       ans = Regex.ART.search(line)
       if ans:
-        art_filename = os.path.join('templates', ans.group(1))
+        art_filename = os.path.join(Dir.templates, ans.group(1))
         line = self.compile_art(art_filename)
 
       # Processes variables.
-      line = Compiler.parse_variable(line)
+      line = self.parse_variable(line)
 
       # Appends this line.
       html += line
@@ -220,32 +235,40 @@ class Compiler:
       text = text[3:-4]
     return text
 
-  @staticmethod
-  def parse_variable(line):
+  def parse_variable(self, line):
     """Converts a variable to language-dependent text."""
     ans = Regex.VARIABLE.search(line)
     while ans:
+      # Gets the variable name to parse.
       variable = ans.group(1)
+
+      # Re-assigns the variable name if redirected:
+      if variable in self._assign_dict:
+        variable = self._assign_dict[variable]
+
+      # Initializes the current language to use.
       language = Lang.current
+
       # Forces language if required.
-      if variable.find('_cn') != -1:
+      if variable[-3:] == '_cn':
         language = Lang.cn
         variable = variable[:-3]
       elif variable.find('_en') != -1:
         language = Lang.en
         variable = variable[:-3]
+
       # Searches the variable in the current language or English.
       value = ''
       if variable not in language:
-        print('[Warn] Cannot find variable %s.' % variable)
-        break
+        logging.warning('Cannot find variable %s in current lang.' % variable)
         if variable not in Lang.en:
-          print('[Error] Cannot find variable %s.' % variable)
+          logging.error('Cannot find English variable %s.' % variable)
           break
         else:
           value = Lang.en[variable]
       else:
         value = language[variable]
+
       # Parses the value of the variable, adds links, and converts Markdown to HTML.
       value = Compiler.parse_markdown(value)
       line = line.replace(ans.group(0), value)

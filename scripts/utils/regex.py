@@ -23,6 +23,9 @@ class Regex:
   IMAGE = re.compile(
       '\<\!\-\-\s*image\:\s?(\w+\.\w+)\s*\|\s*([\w\{\}]+)\s*\-\-\>')
 
+  # Matches: <!-- assign: variable_abc as variable_abc -->
+  ASSIGN = re.compile('\<\!\-\-\s*assign\:\s?(\w+)\s*as\s*(\w+)\s*\-\-\>')
+
   # Matches: <!-- publication: publication_featured.html -->
   PUBLICATION = re.compile(
       '\<\!\-\-\s*publication:\s?([\w\.-\/]+\.\w+)\s*\-\-\>')

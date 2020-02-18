@@ -85,7 +85,7 @@ it.
 
 ## License
 
-DuEngine, DuShaders Creative Commons Attribution-NonCommercial-ShareAlike 3.0
+DuWebKit Creative Commons Attribution-NonCommercial-ShareAlike 3.0
 License with 996 ICU clause: [![996.ICU](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu/#/en_US)
 
 The above license is only granted to entities that act in concordance with local labor laws. In addition, the following requirements must be observed:

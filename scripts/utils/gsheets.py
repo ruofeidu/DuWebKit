@@ -1,13 +1,13 @@
 from __future__ import print_function
 import httplib2
 import os
+import logging
 import datetime
 
 from apiclient import discovery
 from oauth2client import client
 from oauth2client import tools
 from oauth2client.file import Storage
-# from datatypes.dailycost import DailyCost
 
 try:
   import argparse
@@ -46,43 +46,45 @@ def get_credentials():
     flow.user_agent = APPLICATION_NAME
     if flags:
       credentials = tools.run_flow(flow, store, flags)
-    else:  # Needed only for compatibility with Python 2.6
-      # credentials = tools.run(flow, store)
-      print('Please use Python 3+ for compilation.')
+    else:
+      logging.warn('Please use Python 3+ for compilation.')
       pass
-    print('Storing credentials to ' + credential_path)
+    logging.warn('Storing credentials to ' + credential_path)
   return credentials
 
 
 def get_publications(service, spreadsheetId):
+  """Gets publications from gSheet."""
   range_name = 'publications!A:AZ'
-  result = service.spreadsheets().values().get(
+  results = service.spreadsheets().values().get(
       spreadsheetId=spreadsheetId, range=range_name).execute()
-  values = result.get('values', [])
+  values = results.get('values', [])
   if not values:
-    print('No publication found in gSheets.')
+    logging.error('No publication found in gSheets.')
     exit(1)
   return values
 
 
 def get_arts(service, spreadsheetId):
+  """Gets arts from gSheet."""
   range_name = 'arts!A:AZ'
-  result = service.spreadsheets().values().get(
+  results = service.spreadsheets().values().get(
       spreadsheetId=spreadsheetId, range=range_name).execute()
-  values = result.get('values', [])
+  values = results.get('values', [])
   if not values:
-    print('No art found in gSheets.')
+    logging.error('No art found in gSheets.')
     exit(1)
   return values
 
 
 def get_people(service, spreadsheetId):
+  """Gets people from gSheet."""
   range_name = 'people!A:BB'
-  result = service.spreadsheets().values().get(
+  results = service.spreadsheets().values().get(
       spreadsheetId=spreadsheetId, range=range_name).execute()
-  values = result.get('values', [])
+  values = results.get('values', [])
   if not values:
-    print('No people found in gSheets.')
+    logging.error('No people found in gSheets.')
     exit(1)
   return values
 

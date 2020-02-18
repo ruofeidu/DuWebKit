@@ -164,12 +164,14 @@ class Paper:
         self._data['slideshare']) if self._data['slideshare'] else ''
 
   def get_gslides_url(self):
+    """Returns gSlides if exists or returns a full URL."""
     gslides = self._data['gslides']
     if gslides:
       if gslides[:4] == 'http':
         return gslides
       else:
-        return 'https://docs.google.com/presentation/d/%s'
+        return 'https://docs.google.com/presentation/d/%s' % self._data[
+            'gslides']
     else:
       return ''
 
@@ -427,7 +429,8 @@ class Paper:
     supp = 'builds/papers/%s_supp.pdf' % rawname
 
     if not os.path.isfile(filename):
-      print('%s does not exist.' % filename)
+      if self._data['visible']:
+        print('%s does not exist.' % filename)
       return False
     if os.path.getsize(filename) > FILE_LOWRES_MAXSIZE:
       if not os.path.isfile(lowres):
@@ -504,8 +507,8 @@ class Paper:
       return '%s, %s, %s.' % (self._data['attr'], self.get_book(),
                               self.get_year())
     elif self._data['series']:
-      return '%s (%s), %s.' % (self.get_book(), self._data['series'],
-                               self.get_year())
+      return '%s (%s%s), %s.' % (self.get_book(), self._data['series'],
+                                 self._data['series_conf'], self.get_year())
     else:
       return self.get_book_and_year()
 
