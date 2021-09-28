@@ -1,7 +1,7 @@
-""" DuMark is a helper class for Markdown parser to provide customized Markdown sentence.
-
+""" DuMark is a helper class for Markdown parser to provide customized Markdown
+sentence.
 """
-from scripts.utils.constants import FACEBOOK, LINKEDIN, SCHOLAR, TWITTER, MAILTO, VIMEO, GITHUB, INSTAGRAM, YOUTUBE, RESEARCH_GATE, GOOGLE_SEARCH
+from scripts.utils.constants import FACEBOOK, LINKEDIN, SCHOLAR, TWITTER, MAILTO, VIMEO, GITHUB, INSTAGRAM, YOUTUBE, RESEARCH_GATE, GOOGLE_SEARCH, YOUTUBE_IFRAME
 from scripts.utils.utils import Utils
 from scripts.app import App
 
@@ -62,6 +62,20 @@ class DuMark:
                           title if title else 'Paper', description)
 
   @staticmethod
+  def get_slides(slides_id, title=None, description=None, folder='slides'):
+    if len(slides_id) < 2:
+      return ''
+    return DuMark.get_url('%s%s/%s.pdf' % (App.root, folder, slides_id),
+                          title if title else 'Slides', description)
+
+  @staticmethod
+  def get_pptx(slides_id, title=None, description=None, folder='slides'):
+    if len(slides_id) < 2:
+      return ''
+    return DuMark.get_url('%s%s/%s.pptx' % (App.root, folder, slides_id),
+                          title if title else 'PPTX', description)
+
+  @staticmethod
   def get_website(website, title=None):
     if len(website) < 4:
       return ''
@@ -71,54 +85,57 @@ class DuMark:
 
   @staticmethod
   def get_facebook(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(FACEBOOK, username), title if title else 'Facebook')
+    return DuMark.get_url(Utils.get_url(FACEBOOK, username),
+                          title if title else 'Facebook')
 
   @staticmethod
   def get_linkedin(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(LINKEDIN, username), title if title else 'LinkedIn')
+    return DuMark.get_url(Utils.get_url(LINKEDIN, username),
+                          title if title else 'LinkedIn')
 
   @staticmethod
   def get_scholar(user, title=None):
-    return DuMark.get_url(
-        Utils.get_url(SCHOLAR, user), title if title else 'Scholar')
+    return DuMark.get_url(Utils.get_url(SCHOLAR, user),
+                          title if title else 'Scholar')
 
   @staticmethod
   def get_twitter(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(TWITTER, username), title if title else 'Twitter')
+    return DuMark.get_url(Utils.get_url(TWITTER, username),
+                          title if title else 'Twitter')
 
   @staticmethod
   def get_vimeo(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(VIMEO, username), title if title else 'Vimeo')
+    return DuMark.get_url(Utils.get_url(VIMEO, username),
+                          title if title else 'Vimeo')
 
   @staticmethod
   def get_youtube(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(YOUTUBE, username), title if title else 'Youtube')
+    return DuMark.get_url(Utils.get_url(YOUTUBE, username),
+                          title if title else 'Youtube')
+
+  @staticmethod
+  def get_video_iframe_youtube(youtube_id):
+    return YOUTUBE_IFRAME % youtube_id
 
   @staticmethod
   def get_instagram(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(INSTAGRAM, username), title if title else 'Instagram')
+    return DuMark.get_url(Utils.get_url(INSTAGRAM, username),
+                          title if title else 'Instagram')
 
   @staticmethod
   def get_github(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(GITHUB, username), title if title else 'Github')
+    return DuMark.get_url(Utils.get_url(GITHUB, username),
+                          title if title else 'Github')
 
   @staticmethod
   def get_researchgate(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(RESEARCH_GATE, username),
-        title if title else 'ResearchGate')
+    return DuMark.get_url(Utils.get_url(RESEARCH_GATE, username),
+                          title if title else 'ResearchGate')
 
   @staticmethod
   def get_email(username, title=None):
-    return DuMark.get_url(
-        Utils.get_url(MAILTO, username), title if title else 'Email')
+    return DuMark.get_url(Utils.get_url(MAILTO, username),
+                          title if title else 'Email')
 
   @staticmethod
   def get_google(query):

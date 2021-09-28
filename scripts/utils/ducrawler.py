@@ -1,25 +1,25 @@
-""" DuCrawler is a network finder and crawler.
-
-"""
+""" DuCrawler is a high-level interface to crawl contents from the Internet."""
 from bs4 import BeautifulSoup
 import requests
 from urllib.parse import urljoin
 import os
+from scripts.utils.utils import Utils
 
 DU_CRAWLER_HEADER = {
     'User-Agent':
         'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/43.0.2357.134 Safari/537.36'
 }
 
-DU_CRAWLER_TIMEOUT = 2
+DU_CRAWLER_TIMEOUT_SECONDS = 5
 
 
 class DuCrawler:
 
   @staticmethod
   def _request_bytes(url):
-    res = requests.get(
-        url, headers=DU_CRAWLER_HEADER, timeout=DU_CRAWLER_TIMEOUT)
+    res = requests.get(url,
+                       headers=DU_CRAWLER_HEADER,
+                       timeout=DU_CRAWLER_TIMEOUT_SECONDS)
     return res.content if res else ''
 
   @staticmethod
@@ -46,23 +46,27 @@ class DuCrawler:
   def crawl_image(url, **kwargs):
     return DuCrawler.crawl(url, 'img', **kwargs)
 
-  # Downloads an image into local filename. Returns if it is successful.
   @staticmethod
   def download_image(url, filename, **kwargs):
+    """Downloads an image into local filename. Returns if it is successful."""
     src = DuCrawler.crawl_image(url, **kwargs)
     if src:
       data = DuCrawler._request_bytes(src)
-      with open(filename, "wb") as f:
+      with open(Utils.file_nameable(filename), 'wb') as f:
         f.write(data)
       return True
     return False
 
-  # Downloads a file from url.
   @staticmethod
   def download_file(url, filename):
-    data = DuCrawler._request_bytes(url)
-    if not data:
+    """Downloads a file from URL."""
+    try:
+      data = DuCrawler._request_bytes(url)
+      if not data:
+        return False
+      with open(Utils.file_nameable(filename), 'wb') as f:
+        f.write(data)
+    except:
+      print('An exception occurred with ' + url)
       return False
-    with open(filename, "wb") as f:
-      f.write(data)
     return True
